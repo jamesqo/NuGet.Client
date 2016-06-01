@@ -17,7 +17,6 @@ using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
-using Strings = NuGet.Protocol.Strings;
 
 namespace NuGet.Protocol
 {
@@ -135,10 +134,14 @@ namespace NuGet.Protocol
                     Func<HttpRequestMessage> requestFactory = () =>
                     {
                         var request = new HttpRequestMessage(HttpMethod.Get, uri);
+
                         foreach (var a in accept)
                         {
                             request.Headers.Accept.Add(a);
                         }
+
+                        request.SetLogger(log);
+
                         return request;
                     };
 
@@ -255,7 +258,12 @@ namespace NuGet.Protocol
             CancellationToken token)
         {
             Func<Task<HttpResponseMessage>> request = () => SendWithRetrySupportAsync(
-                () => new HttpRequestMessage(HttpMethod.Get, uri),
+                () => 
+                {
+                    var requestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
+                    requestMessage.SetLogger(log);
+                    return requestMessage;
+                },
                 DefaultRequestTimeout,
                 log,
                 token);

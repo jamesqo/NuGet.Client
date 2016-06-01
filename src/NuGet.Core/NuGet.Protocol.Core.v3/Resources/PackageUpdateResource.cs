@@ -261,7 +261,7 @@ namespace NuGet.Protocol.Core.Types
             CancellationToken token)
         {
             await _httpSource.ProcessResponseAsync(
-                () => CreateRequest(source, pathToPackage, apiKey),
+                () => CreateRequest(source, pathToPackage, apiKey, logger),
                 requestTimeout,
                 response =>
                 {
@@ -274,10 +274,12 @@ namespace NuGet.Protocol.Core.Types
 
         private HttpRequestMessage CreateRequest(string source,
             string pathToPackage,
-            string apiKey)
+            string apiKey,
+            ILogger log)
         {
             var fileStream = new FileStream(pathToPackage, FileMode.Open, FileAccess.Read, FileShare.Read);
             var request = new HttpRequestMessage(HttpMethod.Put, GetServiceEndpointUrl(source, string.Empty));
+            request.SetLogger(log);
             var content = new MultipartFormDataContent();
 
             var packageContent = new StreamContent(fileStream);
@@ -365,6 +367,7 @@ namespace NuGet.Protocol.Core.Types
                     {
                         request.Headers.Add(ApiKeyHeader, apiKey);
                     }
+                    request.SetLogger(logger);
                     return request;
                 },
                 response =>

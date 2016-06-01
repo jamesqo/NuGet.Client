@@ -5,7 +5,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -102,7 +101,12 @@ namespace NuGet.Protocol
             try
             {
                 lastRequestUri = await client.ProcessResponseAsync(
-                    () => new HttpRequestMessage(HttpMethod.Get, url),
+                    () =>
+                    {
+                        var request = new HttpRequestMessage(HttpMethod.Get, url);
+                        request.SetLogger(log);
+                        return request;
+                    },
                     response =>
                     {
                         if (response.RequestMessage == null)

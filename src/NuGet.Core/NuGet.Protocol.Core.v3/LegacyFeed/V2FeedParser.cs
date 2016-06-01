@@ -437,6 +437,7 @@ namespace NuGet.Protocol
                     var request = new HttpRequestMessage(HttpMethod.Get, uri);
                     request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/atom+xml"));
                     request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/xml"));
+                    request.SetLogger(log);
                     return request;
                 },
                 async response =>
