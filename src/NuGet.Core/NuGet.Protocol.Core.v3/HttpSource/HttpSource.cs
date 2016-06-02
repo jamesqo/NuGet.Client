@@ -87,7 +87,7 @@ namespace NuGet.Protocol
         /// </summary>
         public async Task<HttpSourceResult> GetAsync(
             string uri,
-            MediaTypeWithQualityHeaderValue[] accept,
+            MediaTypeWithQualityHeaderValue[] acceptHeaderValues,
             string cacheKey,
             HttpSourceCacheContext cacheContext,
             ILogger log,
@@ -133,14 +133,12 @@ namespace NuGet.Protocol
 
                     Func<HttpRequestMessage> requestFactory = () =>
                     {
-                        var request = new HttpRequestMessage(HttpMethod.Get, uri);
+                        var request = HttpRequestMessageFactory.Create(HttpMethod.Get, uri, log);
 
-                        foreach (var a in accept)
+                        foreach (var acceptHeaderValue in acceptHeaderValues)
                         {
-                            request.Headers.Accept.Add(a);
+                            request.Headers.Accept.Add(acceptHeaderValue);
                         }
-
-                        request.SetLogger(log);
 
                         return request;
                     };
@@ -258,12 +256,7 @@ namespace NuGet.Protocol
             CancellationToken token)
         {
             Func<Task<HttpResponseMessage>> request = () => SendWithRetrySupportAsync(
-                () => 
-                {
-                    var requestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
-                    requestMessage.SetLogger(log);
-                    return requestMessage;
-                },
+                () => HttpRequestMessageFactory.Create(HttpMethod.Get, uri, log),
                 DefaultRequestTimeout,
                 log,
                 token);
